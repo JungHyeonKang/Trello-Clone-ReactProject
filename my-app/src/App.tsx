@@ -4,6 +4,7 @@ import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import { IToDo, toDoState } from './atom';
 import Board from './component/Board';
+import { useForm } from 'react-hook-form';
 const Wrapper = styled.div`
   display: flex;
   width: 100vw;
@@ -20,10 +21,28 @@ const Boards = styled.div`
   width: 100%;
   gap: 10px;
 `;
-
+const Form = styled.form`
+  width: 100px;
+  input {
+    width: 100px;
+  }
+`
+interface IBoard{
+  toDoBoard : string
+}
 function App() {
+  const {register,handleSubmit,setValue}=useForm<IBoard>()
   const [todos, setToDos] = useRecoilState(toDoState);
- console.log("todos " , todos)
+  const onValid = ({toDoBoard} : IBoard) =>{      
+    setToDos((todos)=>{
+      return {
+        ...todos,[toDoBoard]: []
+      }
+    })  
+    setValue("toDoBoard","")
+  }
+  
+  
   const onDragEnd = (info: DropResult) =>{
     const {destination,source,draggableId} = info
     if(!destination) return;
@@ -36,6 +55,7 @@ function App() {
         const targetObj = copyBoard[source.index]
         copyBoard.splice(source.index,1)
         copyBoard.splice(destination.index,0,targetObj)
+        window.localStorage.setItem( "todos" ,JSON.stringify({...todos,[source.droppableId] : copyBoard}));
         return {
           ...todos,[source.droppableId] : copyBoard
         }
@@ -48,7 +68,7 @@ function App() {
         const targetObj = sourceBoard[source.index]
         sourceBoard.splice(source.index,1)
         destinationBoard.splice(destination.index,0,targetObj)
-
+        window.localStorage.setItem( "todos" ,JSON.stringify({...todos,[source.droppableId] : sourceBoard , [destination.droppableId] : destinationBoard}));
         return {
           ...todos,[source.droppableId] : sourceBoard , [destination.droppableId] : destinationBoard
         }
@@ -58,6 +78,9 @@ function App() {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
+       <Form onSubmit={handleSubmit(onValid)}>
+            <input {...register("toDoBoard")}/>
+          </Form>
       <Wrapper>
         <Boards>
           {Object.keys(todos).map((boardId) => (

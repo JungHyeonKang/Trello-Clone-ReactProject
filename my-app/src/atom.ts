@@ -4,15 +4,12 @@ export interface IToDo{
   id :number;
   text : string
 }
-interface IToDoState{
+export interface IToDoState{
   [key : string] : IToDo[]
 }
 export const toDoState= atom<IToDoState>({
   key: "toDo",
-  default: {
-    "To Do": [{id:1,text:"하이"},{id:2,text:"하이2"},{id:3,text:"하이3"}],
-    Doing: [],
-    Done: [],
-  },
+  default : JSON.parse(localStorage.getItem("todos") as any)
 })  
+
 

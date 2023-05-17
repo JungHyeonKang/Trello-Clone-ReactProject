@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import { IToDo, toDoState } from "../atom";
 import { Droppable } from "react-beautiful-dnd";
 import DraggableCard from "./DraggableCard";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { useForm } from "react-hook-form";
 import {useRef} from "react"
 
@@ -23,7 +23,7 @@ const Title = styled.h2`
   margin-bottom: 10px;
   font-size: 18px;
 `;
-const Area = styled.div<IAreaProps>`
+const Area = styled.div`
   background-color: "pink";
   flex-grow: 1;
   transition: background-color 0.3s ease-in-out;
@@ -38,28 +38,29 @@ interface IBoardProps{
     boardId : string
     toDos : IToDo[]
 }
-interface IAreaProps {
-    isDraggingFromThis: boolean;
-    isDraggingOver: boolean;
-  }
 interface IForm{
     toDo : string
 }
 function Board({boardId,toDos} : IBoardProps){
     const {register,handleSubmit,setValue}=useForm<IForm>()
-    const setTodos =useSetRecoilState(toDoState)
+    const [todos,setTodos] =useRecoilState(toDoState)
     const onValid = ({toDo} : IForm) =>{
       const newTodo = {
         id : Date.now(),
         text : toDo
       }
        setTodos((todos)=>{
+        window.localStorage.setItem( "todos" ,JSON.stringify({...todos,[boardId] : [...todos[boardId],newTodo]}));
         return {
           ...todos,[boardId] : [...todos[boardId],newTodo]
         }
+        
        })
        setValue("toDo" ,"")
+     
     }
+
+    
     return (
         <Wrapper>
           <Title>{boardId}</Title>
@@ -69,8 +70,6 @@ function Board({boardId,toDos} : IBoardProps){
           <Droppable droppableId={boardId}>
             {(drop, info) => (
               <Area
-                isDraggingOver={info.isDraggingOver}
-                isDraggingFromThis={Boolean(info.draggingFromThisWith)}
                 ref={drop.innerRef}
                 {...drop.droppableProps}
               >
