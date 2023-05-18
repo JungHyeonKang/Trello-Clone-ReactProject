@@ -9,7 +9,7 @@ export interface IToDoState{
 }
 export const toDoState= atom<IToDoState>({
   key: "toDo",
-  default : JSON.parse(localStorage.getItem("todos") as any)
+  default : JSON.parse(localStorage.getItem("todos") as any) ?? []
 })  
 
 

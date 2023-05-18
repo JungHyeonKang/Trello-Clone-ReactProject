@@ -5,6 +5,8 @@ import { useRecoilState } from "recoil";
 import { IToDo, toDoState } from './atom';
 import Board from './component/Board';
 import { useForm } from 'react-hook-form';
+import TrashCan from './component/TrashCan';
+
 const Wrapper = styled.div`
   display: flex;
   width: 100vw;
@@ -24,9 +26,21 @@ const Boards = styled.div`
 const Form = styled.form`
   width: 100px;
   input {
-    width: 100px;
+    width: 100px; 
   }
 `
+const TrashCanTag = styled.div<{url : string}>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: #e74c3c;
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+`;
+
 interface IBoard{
   toDoBoard : string
 }
@@ -35,6 +49,9 @@ function App() {
   const [todos, setToDos] = useRecoilState(toDoState);
   const onValid = ({toDoBoard} : IBoard) =>{      
     setToDos((todos)=>{
+      window.localStorage.setItem( "todos" ,JSON.stringify({
+        ...todos,[toDoBoard]: []
+      }));
       return {
         ...todos,[toDoBoard]: []
       }
@@ -50,8 +67,6 @@ function App() {
       // 같은 보드일때
       setToDos((todos)=>{
         const copyBoard = [...todos[source.droppableId]]
-        console.log("source.droppableId",source.droppableId);
-        
         const targetObj = copyBoard[source.index]
         copyBoard.splice(source.index,1)
         copyBoard.splice(destination.index,0,targetObj)
@@ -62,33 +77,50 @@ function App() {
       })
     }
     if(destination.droppableId !== source.droppableId){
-      setToDos((todos)=>{
-        const sourceBoard = [...todos[source.droppableId]]
-        const destinationBoard = [...todos[destination.droppableId]]
-        const targetObj = sourceBoard[source.index]
-        sourceBoard.splice(source.index,1)
-        destinationBoard.splice(destination.index,0,targetObj)
-        window.localStorage.setItem( "todos" ,JSON.stringify({...todos,[source.droppableId] : sourceBoard , [destination.droppableId] : destinationBoard}));
-        return {
-          ...todos,[source.droppableId] : sourceBoard , [destination.droppableId] : destinationBoard
+
+       if(destination.droppableId === 'trashCan'){
+          setToDos((todos)=>{
+            const sourceBoard = [...todos[source.droppableId]]
+            sourceBoard.splice(source.index,1)
+            window.localStorage.setItem( "todos" ,JSON.stringify( {
+              ...todos,[source.droppableId] : sourceBoard
+            })); 
+            return {
+              ...todos,[source.droppableId] : sourceBoard
+            }
+          })
+        }else{
+          setToDos((todos)=>{
+            const sourceBoard = [...todos[source.droppableId]]
+            const destinationBoard = [...todos[destination.droppableId]]
+            const targetObj = sourceBoard[source.index]
+            sourceBoard.splice(source.index,1)
+            destinationBoard.splice(destination.index,0,targetObj)
+            window.localStorage.setItem( "todos" ,JSON.stringify({...todos,[source.droppableId] : sourceBoard , [destination.droppableId] : destinationBoard}));
+            return {
+              ...todos,[source.droppableId] : sourceBoard , [destination.droppableId] : destinationBoard
+            }
+          })
         }
-      })
     }
   }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-       <Form onSubmit={handleSubmit(onValid)}>
+    <>
+      <Form onSubmit={handleSubmit(onValid)}>
             <input {...register("toDoBoard")}/>
-          </Form>
+        </Form> 
+    <DragDropContext onDragEnd={onDragEnd}>
+       <TrashCan></TrashCan>
       <Wrapper>
         <Boards>
-          {Object.keys(todos).map((boardId) => (
+         {Object.keys(todos).map((boardId) => (
             <Board boardId={boardId} key={boardId} toDos={todos[boardId]} />
-          ))}
+          ))} 
         </Boards>
       </Wrapper>
     </DragDropContext>
+    </>
   );
 }
 
