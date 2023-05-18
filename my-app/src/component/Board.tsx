@@ -4,7 +4,6 @@ import { Droppable } from "react-beautiful-dnd";
 import DraggableCard from "./DraggableCard";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { useForm } from "react-hook-form";
-import {useRef} from "react"
 
 const Wrapper = styled.div`
   width: 300px;
@@ -65,7 +64,7 @@ function Board({boardId,toDos} : IBoardProps){
         <Wrapper>
           <Title>{boardId}</Title>
           <Form onSubmit={handleSubmit(onValid)}>
-            <input {...register("toDo",{required:true})}/>
+            <input {...register("toDo",{required:true})} placeholder="할일 작성"/>
           </Form>
           <Droppable droppableId={boardId}>
             {(drop, info) => (
@@ -74,7 +73,7 @@ function Board({boardId,toDos} : IBoardProps){
                 {...drop.droppableProps}
               >
                 {toDos.map((toDo, index) => (
-                  <DraggableCard key={toDo.id} index={index} toDoId={toDo.id} toDoText={toDo.text} />
+                  <DraggableCard key={toDo.id} index={index} toDoId={toDo.id} toDoText={toDo.text} boardId={boardId} />
                 ))}
                 {drop.placeholder}
               </Area>

@@ -29,18 +29,6 @@ const Form = styled.form`
     width: 100px; 
   }
 `
-const TrashCanTag = styled.div<{url : string}>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background-color: #e74c3c;
-  color: #fff;
-  border-radius: 50%;
-  cursor: pointer;
-`;
-
 interface IBoard{
   toDoBoard : string
 }
@@ -108,13 +96,13 @@ function App() {
   return (
     <>
       <Form onSubmit={handleSubmit(onValid)}>
-            <input {...register("toDoBoard")}/>
+            <input {...register("toDoBoard")} placeholder='새 보드'/>
         </Form> 
     <DragDropContext onDragEnd={onDragEnd}>
        <TrashCan></TrashCan>
       <Wrapper>
         <Boards>
-         {Object.keys(todos).map((boardId) => (
+         {Object.keys(todos).map((boardId,index) => (
             <Board boardId={boardId} key={boardId} toDos={todos[boardId]} />
           ))} 
         </Boards>
